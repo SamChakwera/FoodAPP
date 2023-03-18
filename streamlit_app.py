@@ -75,7 +75,12 @@ def generate_dalle_image(prompt):
     }
 
     response = requests.post(DALLE_API_URL, headers=headers, json=data)
-    image_data = response.json()["data"][0]["image"]
+    if response.status_code == 200:
+        image_data = response.json()["data"][0]["file"]
+    else:
+        image_data = None
+        st.error("Error: Unable to generate an image using DALL-E 2.")
+
     return image_data
 
 st.title("Fridge Recipe Suggester")
