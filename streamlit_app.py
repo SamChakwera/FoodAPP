@@ -76,12 +76,16 @@ def generate_dalle_image(prompt):
 
     response = requests.post(DALLE_API_URL, headers=headers, json=data)
     if response.status_code == 200:
-        image_data = response.json()["data"][0]["file"]
+        response_json = response.json()
+        st.write(response_json)  # Print the response JSON to the Streamlit app
+        # Replace the line below with the correct key to access the image data
+        image_data = response_json["data"][0]["file"]
     else:
         image_data = None
         st.error("Error: Unable to generate an image using DALL-E 2.")
 
     return image_data
+
 
 st.title("Fridge Recipe Suggester")
 uploaded_file = st.file_uploader("Upload a picture of your fridge", type=["jpg", "jpeg", "png"])
