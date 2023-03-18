@@ -38,4 +38,4 @@ This project uses the following open-source libraries and frameworks:
 
 ## Contact
 
-If you have any questions about this project or would like to contact the maintainer, please send an email to @samchakwera.
+If you have any questions about this project or would like to contact the maintainer, please send an email to [@samchakwera](https://github.com/SamChakwera).
