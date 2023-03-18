@@ -6,11 +6,13 @@ This Python code deploys a Streamlit app that allows users to upload pictures of
 
 To install the necessary dependencies for this project, run the following command:
 
+pip install -r requirements.txt
 
 ## Usage
 
 To run the Streamlit app, navigate to the project directory and run the following command:
 
+streamlit run app.py
 
 Once the app is running, you can upload an image of your fridge and click the "Analyze" button. The app will identify the food items in your fridge and use them to generate a dish using the OpenAI API and DALLE 2. The output image will be displayed on the app.
 
