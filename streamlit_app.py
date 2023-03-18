@@ -47,7 +47,7 @@ def ask_gpt3(food_items):
     data = {
         "engine": "text-davinci-003",
         "prompt": prompt,
-        "max_tokens": 50,
+        "max_tokens": 100,
         "n": 1,
         "stop": None,
         "temperature": 0.7,
@@ -76,15 +76,12 @@ def generate_dalle_image(prompt):
 
     response = requests.post(DALLE_API_URL, headers=headers, json=data)
     if response.status_code == 200:
-        response_json = response.json()
-        st.write(response_json)  # Print the response JSON to the Streamlit app
-        # Replace the line below with the correct key to access the image data
-        image_data = response_json["data"][0]["file"]
+        image_url = response.json()["data"][0]["url"]
     else:
-        image_data = None
+        image_url = None
         st.error("Error: Unable to generate an image using DALL-E 2.")
 
-    return image_data
+    return image_url
 
 
 st.title("Fridge Recipe Suggester")
