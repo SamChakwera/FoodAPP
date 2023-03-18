@@ -54,7 +54,11 @@ def ask_gpt3(food_items):
     }
 
     response = requests.post(OPENAI_API_URL, headers=headers, json=data)
-    suggestion = response.json()["choices"][0]["text"].strip()
+    if response.status_code == 200:
+        suggestion = response.json()["choices"][0]["text"].strip()
+    else:
+        suggestion = "Error: Unable to get a suggestion from GPT-3."
+
     return suggestion
 
 def generate_dalle_image(prompt):
