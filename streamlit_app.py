@@ -42,10 +42,10 @@ def ask_gpt3(food_items):
         "Content-Type": "application/json",
     }
 
-    prompt = f"Given the following ingredients: {', '.join(food_items)}, what dishes can be created?"
+    prompt = f"Given the following ingredients: {', '.join(food_items)}, what dishes can be created? Please ignore non food items"
 
     data = {
-        "engine": "davinci-codex",
+        "engine": "text-davinci-003",
         "prompt": prompt,
         "max_tokens": 50,
         "n": 1,
