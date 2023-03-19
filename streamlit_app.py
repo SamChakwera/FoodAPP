@@ -42,7 +42,7 @@ def ask_gpt3(food_items):
         "Content-Type": "application/json",
     }
 
-    prompt = f"Given the following ingredients: {', '.join(food_items)}, what dishes can be created? Please ignore non food items"
+    prompt = f"Given the following ingredients: {', '.join(food_items)}, what dishes can be created?"
 
     data = {
         "engine": "text-davinci-003",
@@ -58,8 +58,10 @@ def ask_gpt3(food_items):
         suggestion = response.json()["choices"][0]["text"].strip()
     else:
         suggestion = "Error: Unable to get a suggestion from GPT-3."
+        st.write(f"Error details: {response.status_code}, {response.text}")  # Print the error details
 
     return suggestion
+
 
 def generate_dalle_image(prompt):
     headers = {
