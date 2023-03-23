@@ -76,20 +76,9 @@ ingredient_names = list(term_variables)
 classifier = pipeline("image-classification", model="stchakman/Fridge_Items_Model")
 
 def extract_ingredients(image):
-    # Define the transformations
-    transform = Compose([
-        Resize(256),
-        CenterCrop(224),
-        ToTensor(),
-        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-    # Apply the transformations to the image
-    image = transform(image).unsqueeze(0)
-    # Pass the transformed image to the classifier
     preds = classifier(image)
-    # Get the highest scoring ingredient
-    prediction = max(preds, key=lambda x: x["score"])
-    return [ingredient_names[prediction["label"]]]
+    predictions = [pred["label"] for pred in preds]
+    return [prediction for prediction in predictions if prediction in ingredient_names]
 
 def generate_dishes(prompt, n=3, max_tokens=10, temperature=0.7):
     response = openai.Completion.create(
