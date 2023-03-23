@@ -71,6 +71,7 @@ term_variables = {
     "Mussels", "Mustard", "Nectarines", "Onions", "Oranges", "Peaches", "Peas", "Peppers", "Pineapple", "Pizza", "Plums", "Pork", "Potatoes", "Salad dressings", "Salmon", "Shrimp", "Sour cream", "Soy sauce", "Spinach", "Squash", "Steak", "Sweet potatoes", "Frozen Fruits", "Tilapia", "Tomatoes", "Tuna", "Turkey", "Venison", "Water bottles", "Wine", "Yogurt", "Zucchini"
 }
 ingredient_names = list(term_variables)
+
 def extract_ingredients(image):
     transform = Compose([
         Resize(256),
@@ -79,6 +80,7 @@ def extract_ingredients(image):
         Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
     ])
 
+    image = Image.fromarray(np.array(image))
     image = transform(image).unsqueeze(0)
     inputs = extractor(images=image, return_tensors="pt")
     outputs = model(**inputs)
