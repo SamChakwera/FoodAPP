@@ -6,3 +6,4 @@ transformers
 openai
 requests
 diffusers
+accelerate
