@@ -1,74 +1,140 @@
 import streamlit as st
-import openai
 import requests
-import json
 from PIL import Image
+import numpy as np
+from torchvision.transforms import Compose, Resize, CenterCrop, ToTensor, Normalize
 from transformers import AutoFeatureExtractor, AutoModelForImageClassification
+from transformers import pipeline
+import openai
+from io import BytesIO
+import os
 
-# Set up API keys
-openai.api_key = "<your_openai_api_key>"
-dalle2_api_key = "<your_dalle2_api_key>"
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# Load custom model
+# Load models and set up GPT-3 pipeline
 extractor = AutoFeatureExtractor.from_pretrained("stchakman/Fridge_Items_Model")
 model = AutoModelForImageClassification.from_pretrained("stchakman/Fridge_Items_Model")
+gpt3 = pipeline("text-davinci-003", api_key="your_openai_api_key")
 
-# Helper functions
-def get_dishes_from_gpt3(ingredients):
-    prompt = f"Given the ingredients: {', '.join(ingredients)}, suggest three dishes and their preparation methods."
-
-    response = openai.Completion.create(
-        engine="davinci-codex",
-        prompt=prompt,
-        max_tokens=200,
-        n=1,
-        stop=None,
-        temperature=0.5,
-    )
-
-    return response.choices[0].text.strip()
-
-def generate_images(prompt, num_images=3):
-    headers = {
-        "Authorization": f"Bearer {dalle2_api_key}",
-        "Content-Type": "application/json",
-    }
-
-    data = {
-        "model": "image-alpha-001",
-        "prompt": prompt,
-        "num_images": num_images,
-    }
-
-    response = requests.post("https://api.openai.com/v1/images/generations", headers=headers, data=json.dumps(data))
-    return [image["url"] for image in response.json()["data"]]
-
+# Map indices to ingredient names
+term_variables = {
+    "Apples",
+    "Asparagus", 
+    "Avocado", 
+    "Bananas", 
+    "BBQ sauce", 
+    "Beans", 
+    "Beef", 
+    "Beer", 
+    "Berries", 
+    "Bison", 
+    "Bread", 
+    "Broccoli", 
+    "Cauliflower", 
+    "Celery", 
+    "Cheese", 
+    "Chicken", 
+    "Chocolate", 
+    "Citrus fruits", 
+    "Clams", 
+    "Cold cuts", 
+    "Corn", 
+    "Cottage cheese", 
+    "Crab", 
+    "Cream", 
+    "Cream cheese", 
+    "Cucumbers", 
+    "Duck", 
+    "Eggs", 
+    "Energy drinks", 
+    "Fish", 
+    "Frozen vegetables", 
+    "Frozen meals", 
+    "Garlic", 
+    "Grapes", 
+    "Ground beef", 
+    "Ground chicken", 
+    "Ham", 
+    "Hot sauce", 
+    "Hummus", 
+    "Ice cream", 
+    "Jams", 
+    "Jerky", 
+    "Kiwi", 
+    "Lamb", 
+    "Lemons", 
+    "Lobster", 
+    "Mangoes", 
+    "Mayonnaise", 
+    "Melons", 
+    "Milk", 
+    "Mussels", "Mustard", "Nectarines", "Onions", "Oranges", "Peaches", "Peas", "Peppers", "Pineapple", "Pizza", "Plums", "Pork", "Potatoes", "Salad dressings", "Salmon", "Shrimp", "Sour cream", "Soy sauce", "Spinach", "Squash", "Steak", "Sweet potatoes", "Frozen Fruits", "Tilapia", "Tomatoes", "Tuna", "Turkey", "Venison", "Water bottles", "Wine", "Yogurt", "Zucchini"
+}
+ingredient_names = list(term_variables.values())
 def extract_ingredients(image):
-    inputs = extractor(image, return_tensors="pt")
+    transform = Compose([
+        Resize(256),
+        CenterCrop(224),
+        ToTensor(),
+        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+
+    image = transform(image).unsqueeze(0)
+    inputs = extractor(images=image, return_tensors="pt")
     outputs = model(**inputs)
     predictions = outputs.logits.argmax(dim=1).tolist()
-    return predictions  # Replace this line with code to map predictions to ingredient names
+    return [ingredient_names[prediction] for prediction in predictions]
 
-# Streamlit app
-st.title("Fridge Ingredient Recipe Generator")
+def generate_dishes(prompt, n=3, max_tokens=10, temperature=0.7):
+    response = openai.Completion.create(
+        model="text-davinci-003",
+        prompt=prompt,
+        max_tokens=max_tokens,
+        temperature=temperature,
+        n=n
+    )
 
-uploaded_file = st.file_uploader("Upload a photo of your fridge ingredients")
+    dishes = [choice.text.strip() for choice in response.choices]
+    return dishes
+
+def generate_images(prompt):
+    response = openai.Image.create_edit(
+        image=None,  # You will need to provide the image input
+        mask=None,   # You will need to provide the mask input, if required
+        prompt=prompt,
+        n=3,
+        size="256x256",
+        response_format="url",
+    )
+
+    images = []
+    for url in response['data']:
+        response = requests.get(url)
+        image = Image.open(BytesIO(response.content))
+        images.append(image)
+
+    return image
+
+st.title("Fridge to Dish App")
+st.write("Upload an image of food ingredients in your fridge and get recipe suggestions!")
+
+uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "png"])
+
 if uploaded_file is not None:
     image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
+
     ingredients = extract_ingredients(image)
+    st.write(f"Ingredients detected: {', '.join(ingredients)}")
 
-    if ingredients:
-        dish_text = get_dishes_from_gpt3(ingredients)
-        dish_list = dish_text.split("\n")
+    suggested_dishes = generate_dishes(ingredients)
+    st.write("Suggested dishes:")
+    st.write(suggested_dishes)
 
-        dish_images = []
-        for dish in dish_list:
-            dish_title = dish.split(":")[0].strip()
-            dish_images.extend(generate_images(dish_title))
+    dish_images = generate_images(suggested_dishes)
 
-        selected_image = st.select_image(dish_images, width=100, height=100, columns=3)
-
-        if selected_image:
-            selected_dish = dish_images.index(selected_image) % 3
-            st.markdown(f"**Selected Dish:** {dish_list[selected_dish].split(':')[0].strip()}")
-            st.markdown(f"**Preparation:** {dish_list[selected_dish].split(':')[1].strip()}")
+    # Display dish images in a grid
+    # Replace the following lines with code to display generated images
+    st.write("Generated images:")
+    for i in range(3):
+        st.image("placeholder.jpg", caption=f"Dish {i+1}")
