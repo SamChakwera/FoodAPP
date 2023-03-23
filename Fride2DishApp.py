@@ -72,20 +72,21 @@ term_variables = {
 }
 ingredient_names = list(term_variables)
 
-def extract_ingredients(image):
-    transform = Compose([
-        Resize(256),
-        CenterCrop(224),
-        ToTensor(),
-        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
+classifier = pipeline("image-classification", model="stchakman/Fridge_Items_Model")
 
-    image = Image.fromarray(np.array(image))
-    image = transform(image).unsqueeze(0)
-    inputs = extractor(images=image, return_tensors="pt")
-    outputs = model(**inputs)
-    predictions = outputs.logits.argmax(dim=1).tolist()
-    return [ingredient_names[prediction] for prediction in predictions]
+def extract_ingredients(image):
+    # Convert the PIL.Image object to a NumPy array
+    image = np.array(image)
+    # Save the image as a temporary file
+    temp_file = "temp_image.jpg"
+    Image.fromarray(image).save(temp_file)
+    # Pass the temporary file to the classifier
+    preds = classifier(temp_file)
+    # Remove the temporary file
+    os.remove(temp_file)
+    # Get the highest scoring ingredient
+    prediction = max(preds, key=lambda x: x["score"])
+    return [ingredient_names[prediction["label"]]]
 
 def generate_dishes(prompt, n=3, max_tokens=10, temperature=0.7):
     response = openai.Completion.create(
