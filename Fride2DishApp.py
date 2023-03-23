@@ -11,7 +11,7 @@ import os
 import tempfile
 from diffusers import StableDiffusionPipeline
 import torch
-
+import base64
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
@@ -51,43 +51,42 @@ def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
     dishes = [choice.text.strip() for choice in response.choices]
     return dishes
 
-def generate_images(dishes):
-    truncated_dishes = [dish.split(':')[0] for dish in dishes[:3]]
-
+def generate_image(prompt):
     model_id = "runwayml/stable-diffusion-v1-5"
     pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
-    pipe = pipe.to("cuda")
 
-    images = []
-    for dish in truncated_dishes:
-        prompt = f"a photo of {dish}"
-        generated_image = pipe(prompt).images[0]
-        image = Image.fromarray((generated_image.permute(1, 2, 0).cpu().numpy() * 255).astype(np.uint8))
-        images.append(image)
+    # If you have a GPU available, uncomment the following line
+    # pipe = pipe.to("cuda")
 
-    return images
+    image = pipe(prompt).images[0]
+    return image
 
+def get_image_download_link(image, filename, text):
+    buffered = BytesIO()
+    image.save(buffered, format="JPEG")
+    img_str = base64.b64encode(buffered.getvalue()).decode()
+    href = f'<a download="{filename}" href="data:image/jpeg;base64,{img_str}" target="_blank">{text}</a>'
+    return href
 
 st.title("Fridge to Dish App")
 st.write("Upload an image of food ingredients in your fridge and get recipe suggestions!")
 
-uploaded_file = st.file_uploader("Choose an image file", type=["jpg", "jpeg", "png"])
-
-if uploaded_file is not None:
-    image = Image.open(uploaded_file)
-    st.image(image, caption="Uploaded Image", use_column_width=True)
-
+# Upload the image and extract ingredients (use the appropriate function)
+uploaded_image = st.file_uploader("Upload an image of your fridge", type=['jpg', 'jpeg'])
+if uploaded_image:
+    image = Image.open(uploaded_image)
+    st.image(image, caption='Uploaded Image.', use_column_width=True)
     ingredients = extract_ingredients(image)
-    st.write(f"Ingredients detected: {', '.join(ingredients)}")
 
+    # Generate dish suggestions
     suggested_dishes = generate_dishes(ingredients)
-    st.write("Suggested dishes:")
-    st.write(suggested_dishes)
 
-    dish_images = generate_images(suggested_dishes)
+    for i, dish in enumerate(suggested_dishes):
+        st.write(f"Suggested Dish {i + 1}: {dish}")
 
-    # Display dish images in a grid
-    # Replace the following lines with code to display generated images
-    st.write("Generated images:")
-    for i in range(3):
-        st.image("placeholder.jpg", caption=f"Dish {i+1}")
+        if st.button(f"Generate Image for Dish {i + 1}"):
+            dish_image = generate_image(dish)
+            st.image(dish_image, caption=f'Generated Image for {dish}.', use_column_width=True)
+
+            download_link = get_image_download_link(dish_image, f"{dish}.jpg", f"Download {dish} Image")
+            st.markdown(download_link, unsafe_allow_html=True)
