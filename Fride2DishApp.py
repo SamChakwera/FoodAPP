@@ -14,7 +14,7 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Load models and set up GPT-3 pipeline
 extractor = AutoFeatureExtractor.from_pretrained("stchakman/Fridge_Items_Model")
 model = AutoModelForImageClassification.from_pretrained("stchakman/Fridge_Items_Model")
-gpt3 = pipeline("text-davinci-003", api_key="your_openai_api_key")
+#gpt3 = pipeline("text-davinci-003", api_key="your_openai_api_key")
 
 # Map indices to ingredient names
 term_variables = {
