@@ -9,6 +9,8 @@ import openai
 from io import BytesIO
 import os
 import tempfile
+from diffusers import StableDiffusionPipeline
+import torch
 
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -19,59 +21,7 @@ model = AutoModelForImageClassification.from_pretrained("stchakman/Fridge_Items_
 #gpt3 = pipeline("text-davinci-003", api_key="your_openai_api_key")
 
 # Map indices to ingredient names
-term_variables = {
-    "Apples",
-    "Asparagus", 
-    "Avocado", 
-    "Bananas", 
-    "BBQ sauce", 
-    "Beans", 
-    "Beef", 
-    "Beer", 
-    "Berries", 
-    "Bison", 
-    "Bread", 
-    "Broccoli", 
-    "Cauliflower", 
-    "Celery", 
-    "Cheese", 
-    "Chicken", 
-    "Chocolate", 
-    "Citrus fruits", 
-    "Clams", 
-    "Cold cuts", 
-    "Corn", 
-    "Cottage cheese", 
-    "Crab", 
-    "Cream", 
-    "Cream cheese", 
-    "Cucumbers", 
-    "Duck", 
-    "Eggs", 
-    "Energy drinks", 
-    "Fish", 
-    "Frozen vegetables", 
-    "Frozen meals", 
-    "Garlic", 
-    "Grapes", 
-    "Ground beef", 
-    "Ground chicken", 
-    "Ham", 
-    "Hot sauce", 
-    "Hummus", 
-    "Ice cream", 
-    "Jams", 
-    "Jerky", 
-    "Kiwi", 
-    "Lamb", 
-    "Lemons", 
-    "Lobster", 
-    "Mangoes", 
-    "Mayonnaise", 
-    "Melons", 
-    "Milk", 
-    "Mussels", "Mustard", "Nectarines", "Onions", "Oranges", "Peaches", "Peas", "Peppers", "Pineapple", "Pizza", "Plums", "Pork", "Potatoes", "Salad dressings", "Salmon", "Shrimp", "Sour cream", "Soy sauce", "Spinach", "Squash", "Steak", "Sweet potatoes", "Frozen Fruits", "Tilapia", "Tomatoes", "Tuna", "Turkey", "Venison", "Water bottles", "Wine", "Yogurt", "Zucchini"
-}
+term_variables = { "Apples", "Asparagus", "Avocado", "Bananas", "BBQ sauce", "Beans", "Beef", "Beer", "Berries", "Bison", "Bread", "Broccoli", "Cauliflower", "Celery", "Cheese", "Chicken", "Chocolate", "Citrus fruits", "Clams", "Cold cuts", "Corn", "Cottage cheese", "Crab", "Cream", "Cream cheese", "Cucumbers", "Duck", "Eggs", "Energy drinks", "Fish", "Frozen vegetables", "Frozen meals", "Garlic", "Grapes", "Ground beef", "Ground chicken", "Ham", "Hot sauce", "Hummus", "Ice cream", "Jams", "Jerky", "Kiwi", "Lamb", "Lemons", "Lobster", "Mangoes", "Mayonnaise", "Melons", "Milk", "Mussels", "Mustard", "Nectarines", "Onions", "Oranges", "Peaches", "Peas", "Peppers", "Pineapple", "Pizza", "Plums", "Pork", "Potatoes", "Salad dressings", "Salmon", "Shrimp", "Sour cream", "Soy sauce", "Spinach", "Squash", "Steak", "Sweet potatoes", "Frozen Fruits", "Tilapia", "Tomatoes", "Tuna", "Turkey", "Venison", "Water bottles", "Wine", "Yogurt", "Zucchini" }
 ingredient_names = list(term_variables)
 
 classifier = pipeline("image-classification", model="stchakman/Fridge_Items_Model")
@@ -103,21 +53,16 @@ def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
 
 def generate_images(dishes):
     truncated_dishes = [dish.split(':')[0] for dish in dishes[:3]]
-    prompt = f"Generate an image for each of the following dishes: {truncated_dishes[0]}, {truncated_dishes[1]}, {truncated_dishes[2]}."
 
-    response = openai.Image.create_edit(
-        image=None,  # You will need to provide the image input
-        mask=None,   # You will need to provide the mask input, if required
-        prompt=prompt,
-        n=3,
-        size="256x256",
-        response_format="url",
-    )
+    model_id = "runwayml/stable-diffusion-v1-5"
+    pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+    pipe = pipe.to("cuda")
 
     images = []
-    for url in response['data']:
-        response = requests.get(url)
-        image = Image.open(BytesIO(response.content))
+    for dish in truncated_dishes:
+        prompt = f"a photo of {dish}"
+        generated_image = pipe(prompt).images[0]
+        image = Image.fromarray((generated_image.permute(1, 2, 0).cpu().numpy() * 255).astype(np.uint8))
         images.append(image)
 
     return images
