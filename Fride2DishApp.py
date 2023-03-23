@@ -88,7 +88,7 @@ def extract_ingredients(image):
 
 def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
     ingredients_str = ', '.join(ingredients)
-    prompt = f"I have {ingredients_str} in my fridge. What dishes can I make?"
+    prompt = f"I have {ingredients_str} Please return the name of a dish I can make followed by intructions on how to prepare that dish "
 
     response = openai.Completion.create(
         model="text-davinci-003",
