@@ -76,9 +76,15 @@ ingredient_names = list(term_variables)
 classifier = pipeline("image-classification", model="stchakman/Fridge_Items_Model")
 
 def extract_ingredients(image):
-    preds = classifier(image)
+    # Convert the PIL Image to bytes
+    img_byte_arr = BytesIO()
+    image.save(img_byte_arr, format='JPEG')
+    img_byte_arr.seek(0)
+
+    preds = classifier(img_byte_arr)
     predictions = [pred["label"] for pred in preds]
     return [prediction for prediction in predictions if prediction in ingredient_names]
+
 
 def generate_dishes(prompt, n=3, max_tokens=10, temperature=0.7):
     response = openai.Completion.create(
