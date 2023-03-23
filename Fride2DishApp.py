@@ -86,9 +86,10 @@ def extract_ingredients(image):
     predictions = [pred["label"] for pred in preds]
     return [prediction for prediction in predictions if prediction in ingredient_names]
 
+def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
+    ingredients_str = ', '.join(ingredients)
+    prompt = f"I have {ingredients_str} in my fridge. What dishes can I make?"
 
-
-def generate_dishes(prompt, n=3, max_tokens=200, temperature=0.7):
     response = openai.Completion.create(
         model="text-davinci-003",
         prompt=prompt,
@@ -100,7 +101,9 @@ def generate_dishes(prompt, n=3, max_tokens=200, temperature=0.7):
     dishes = [choice.text.strip() for choice in response.choices]
     return dishes
 
-def generate_images(prompt):
+def generate_images(dishes):
+    prompt = f"Generate an image for each of the following dishes: {dishes[0]}, {dishes[1]}, {dishes[2]}."
+
     response = openai.Image.create_edit(
         image=None,  # You will need to provide the image input
         mask=None,   # You will need to provide the mask input, if required
@@ -116,7 +119,7 @@ def generate_images(prompt):
         image = Image.open(BytesIO(response.content))
         images.append(image)
 
-    return image
+    return images
 
 st.title("Fridge to Dish App")
 st.write("Upload an image of food ingredients in your fridge and get recipe suggestions!")
