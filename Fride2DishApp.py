@@ -53,7 +53,7 @@ def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
 
 def generate_image(prompt):
     model_id = "runwayml/stable-diffusion-v1-5"
-    pipe = StableDiffusionPipeline.from_pretrained(model_id, torch_dtype=torch.float16)
+    pipe = StableDiffusionPipeline.from_pretrained(model_id)
 
     # If you have a GPU available, uncomment the following line
     # pipe = pipe.to("cuda")
