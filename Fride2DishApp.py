@@ -9,6 +9,7 @@ import openai
 from io import BytesIO
 import os
 
+
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # Load models and set up GPT-3 pipeline
@@ -75,15 +76,17 @@ ingredient_names = list(term_variables)
 classifier = pipeline("image-classification", model="stchakman/Fridge_Items_Model")
 
 def extract_ingredients(image):
-    # Convert the PIL.Image object to a NumPy array
-    image = np.array(image)
-    # Save the image as a temporary file
-    temp_file = "temp_image.jpg"
-    Image.fromarray(image).save(temp_file)
-    # Pass the temporary file to the classifier
-    preds = classifier(temp_file)
-    # Remove the temporary file
-    os.remove(temp_file)
+    # Define the transformations
+    transform = Compose([
+        Resize(256),
+        CenterCrop(224),
+        ToTensor(),
+        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ])
+    # Apply the transformations to the image
+    image = transform(image).unsqueeze(0)
+    # Pass the transformed image to the classifier
+    preds = classifier(image)
     # Get the highest scoring ingredient
     prediction = max(preds, key=lambda x: x["score"])
     return [ingredient_names[prediction["label"]]]
