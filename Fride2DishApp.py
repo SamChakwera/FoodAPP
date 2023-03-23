@@ -88,7 +88,7 @@ def extract_ingredients(image):
 
 
 
-def generate_dishes(prompt, n=3, max_tokens=10, temperature=0.7):
+def generate_dishes(prompt, n=3, max_tokens=200, temperature=0.7):
     response = openai.Completion.create(
         model="text-davinci-003",
         prompt=prompt,
