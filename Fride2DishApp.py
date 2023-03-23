@@ -76,14 +76,13 @@ ingredient_names = list(term_variables)
 classifier = pipeline("image-classification", model="stchakman/Fridge_Items_Model")
 
 def extract_ingredients(image):
-    # Convert the PIL Image to bytes
-    img_byte_arr = BytesIO()
-    image.save(img_byte_arr, format='JPEG')
-    img_byte_arr.seek(0)
+    # Convert the PIL Image to an ndarray
+    image = np.array(image)
 
-    preds = classifier(img_byte_arr)
+    preds = classifier(image)
     predictions = [pred["label"] for pred in preds]
     return [prediction for prediction in predictions if prediction in ingredient_names]
+
 
 
 def generate_dishes(prompt, n=3, max_tokens=10, temperature=0.7):
