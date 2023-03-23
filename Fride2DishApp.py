@@ -8,6 +8,7 @@ from transformers import pipeline
 import openai
 from io import BytesIO
 import os
+import tempfile
 
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -76,10 +77,12 @@ ingredient_names = list(term_variables)
 classifier = pipeline("image-classification", model="stchakman/Fridge_Items_Model")
 
 def extract_ingredients(image):
-    # Convert the PIL Image to an ndarray
-    image = np.array(image)
+    # Save the PIL Image as a temporary file
+    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
+        image.save(temp_file, format="JPEG")
+        temp_file_path = temp_file.name
 
-    preds = classifier(image)
+    preds = classifier(temp_file_path)
     predictions = [pred["label"] for pred in preds]
     return [prediction for prediction in predictions if prediction in ingredient_names]
 
