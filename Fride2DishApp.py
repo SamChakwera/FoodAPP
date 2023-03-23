@@ -70,7 +70,7 @@ term_variables = {
     "Milk", 
     "Mussels", "Mustard", "Nectarines", "Onions", "Oranges", "Peaches", "Peas", "Peppers", "Pineapple", "Pizza", "Plums", "Pork", "Potatoes", "Salad dressings", "Salmon", "Shrimp", "Sour cream", "Soy sauce", "Spinach", "Squash", "Steak", "Sweet potatoes", "Frozen Fruits", "Tilapia", "Tomatoes", "Tuna", "Turkey", "Venison", "Water bottles", "Wine", "Yogurt", "Zucchini"
 }
-ingredient_names = list(term_variables.values())
+ingredient_names = list(term_variables)
 def extract_ingredients(image):
     transform = Compose([
         Resize(256),
