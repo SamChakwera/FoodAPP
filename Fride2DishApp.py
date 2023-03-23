@@ -102,7 +102,8 @@ def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
     return dishes
 
 def generate_images(dishes):
-    prompt = f"Generate an image for each of the following dishes: {dishes[0]}, {dishes[1]}, {dishes[2]}."
+    truncated_dishes = [dish.split(':')[0] for dish in dishes[:3]]
+    prompt = f"Generate an image for each of the following dishes: {truncated_dishes[0]}, {truncated_dishes[1]}, {truncated_dishes[2]}."
 
     response = openai.Image.create_edit(
         image=None,  # You will need to provide the image input
@@ -120,6 +121,7 @@ def generate_images(dishes):
         images.append(image)
 
     return images
+
 
 st.title("Fridge to Dish App")
 st.write("Upload an image of food ingredients in your fridge and get recipe suggestions!")
