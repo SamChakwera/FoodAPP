@@ -69,24 +69,36 @@ def get_image_download_link(image, filename, text):
     return href
 
 st.title("Fridge to Dish App")
-st.write("Upload an image of food ingredients in your fridge and get recipe suggestions!")
 
-# Upload the image and extract ingredients (use the appropriate function)
-uploaded_image = st.file_uploader("Upload an image of your fridge", type=['jpg', 'jpeg'])
-if uploaded_image:
+uploaded_image = st.file_uploader("Upload an image of your fridge", type=["jpg", "jpeg", "png"])
+
+if uploaded_image is not None:
     image = Image.open(uploaded_image)
-    st.image(image, caption='Uploaded Image.', use_column_width=True)
-    ingredients = extract_ingredients(image)
+    st.image(image, caption="Uploaded Fridge Image, Please wait", use_column_width=True)
 
-    # Generate dish suggestions
+    ingredients = extract_ingredients(image)
+    st.write("Detected Ingredients:")
+    st.write(ingredients)
+
     suggested_dishes = generate_dishes(ingredients)
 
-    for i, dish in enumerate(suggested_dishes):
-        st.write(f"Suggested Dish {i + 1}: {dish}")
+    if suggested_dishes:
+        st.write("Suggested Dishes:")
+        for dish in suggested_dishes:
+            st.write(dish)
 
-        if st.button(f"Generate Image for Dish {i + 1}"):
-            dish_image = generate_image(dish)
-            st.image(dish_image, caption=f'Generated Image for {dish}.', use_column_width=True)
+        if st.button("Generate Image for Dish 1"):
+            dish1_image = generate_image(suggested_dishes[0].split(":")[0])
+            st.image(dish1_image, caption=f"Generated Image for {suggested_dishes[0].split(':')[0]}", use_column_width=True)
 
-            download_link = get_image_download_link(dish_image, f"{dish}.jpg", f"Download {dish} Image")
-            st.markdown(download_link, unsafe_allow_html=True)
+        if st.button("Generate Image for Dish 2"):
+            dish2_image = generate_image(suggested_dishes[1].split(":")[0])
+            st.image(dish2_image, caption=f"Generated Image for {suggested_dishes[1].split(':')[0]}", use_column_width=True)
+
+        if st.button("Generate Image for Dish 3"):
+            dish3_image = generate_image(suggested_dishes[2].split(":")[0])
+            st.image(dish3_image, caption=f"Generated Image for {suggested_dishes[2].split(':')[0]}", use_column_width=True)
+    else:
+        st.write("No dishes found")
+else:
+    st.write("Please upload an image")
