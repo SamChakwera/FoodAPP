@@ -1,42 +1,79 @@
-# Fridge AI - Streamlit App
+# Fridge 2 Dish App
 
-This Python code deploys a Streamlit app that allows users to upload pictures of their fridge and identifies what food items are in the fridge. The app then calls the OpenAI API and asks a GPT model what dishes can be created from the available food in the fridge. Finally, the app outputs an image of the dish using DALLE 2.
-
-## Installation
-
-To install the necessary dependencies for this project, run the following command:
-
-$pip install -r requirements.txt
-
-## Usage
-
-To run the Streamlit app, navigate to the project directory and run the following command:
-
-$streamlit run app.py
-
-Once the app is running, you can upload an image of your fridge and click the "Analyze" button. The app will identify the food items in your fridge and use them to generate a dish using the OpenAI API and DALLE 2. The output image will be displayed on the app.
+Fridge to Dish App is a web application that helps users find dish suggestions based on the ingredients they have in their fridge. Users can upload an image of their ingredients, and the app will identify the ingredients and provide dish suggestions along with their instructions. Users can also generate an image for each suggested dish.
 
 ## Features
 
-- Identify food items in an image of a fridge
-- Generate a dish from the available food items using the OpenAI API and GPT model
-- Output an image of the dish using DALLE 2
+- Ingredient recognition from an image
+- Dish suggestions based on the ingredients
+- Generating images for the suggested dishes
 
-## Contributing
+## Installation
 
-Contributions to this project are welcome. Please submit bug reports and feature requests through the issue tracker on GitHub. 
+1. Clone the repository
+
+```
+git clone https://github.com/yourusername/fridge-to-dish-app.git
+```
+
+2. Change the working directory
+
+```
+cd fridge-to-dish-app
+```
+
+3. Create a virtual environment
+
+```
+python -m venv venv
+```
+
+4. Activate the virtual environment
+
+```
+# For Windows
+venv\Scripts\activate
+
+# For Linux/Mac
+source venv/bin/activate
+```
+
+5. Install the dependencies
+
+```
+pip install -r requirements.txt
+```
+
+## Usage
+
+1. Start the Streamlit app
+
+```
+streamlit run app.py
+```
+
+2. Open the app in your browser using the provided URL
+
+3. Upload an image of your ingredients
+
+4. Review the detected ingredients and suggested dishes
+
+5. Click on the "Generate Image" button to see an image of each suggested dish
+
+## Technologies Used
+
+- Python
+- Streamlit
+- OpenAI GPT-3
+- OpenAI CLIP
+- OpenAI DALL-E
+- PIL (Python Imaging Library)
+- Diffusers
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+This project is licensed under the [MIT License](LICENSE).
 
-## Credits
-
-This project uses the following open-source libraries and frameworks:
-
-- Streamlit
-- OpenAI API
-- DALLE 2
 
 ## Contact
 
