@@ -86,7 +86,7 @@ if uploaded_file is not None:
     if len(suggested_dishes) > 0:
         st.write("Suggested dishes based on the ingredients:")
         for idx, dish in enumerate(suggested_dishes):
-            st.write(f"{idx + 1}. {dish.split(':')[0]}")
+            st.write(f"{idx + 1}. {dish}")
 
         for idx, dish in enumerate(suggested_dishes[:3]):
             if st.button(f"Generate Image for Dish {idx + 1}"):
@@ -94,3 +94,4 @@ if uploaded_file is not None:
                 st.image(dish_image, caption=dish.split(':')[0], use_column_width=True)
     else:
         st.write("No dishes found for the given ingredients.")
+
