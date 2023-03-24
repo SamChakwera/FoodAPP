@@ -33,7 +33,7 @@ def extract_ingredients(uploaded_image):
 
     image = Image.open(temp_file.name)
     preds = classifier(temp_file.name)
-    ingredients = [label for score, label in preds]
+    ingredients = [pred["label"] for pred in preds]
 
     temp_file.close()
     os.unlink(temp_file.name)
@@ -42,7 +42,7 @@ def extract_ingredients(uploaded_image):
 
 def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
     ingredients_str = ', '.join(ingredients)
-    prompt = f"I have {ingredients_str} Please return the name of a dish I can make followed by instructions on how to prepare that dish "
+    prompt = f"I have {ingredients_str} Please return the name of a dish I can make followed by instructions on how to prepare that dish"
 
     response = openai.Completion.create(
         model="text-davinci-003",
@@ -73,20 +73,22 @@ def get_image_download_link(image, filename, text):
 
 st.title("Fridge to Dish App")
 
-uploaded_image = st.file_uploader("Upload an image of your fridge", type=["jpg", "jpeg"])
-
-if uploaded_image is not None:
-    ingredients = extract_ingredients(uploaded_image)
-    st.write(f"Identified ingredients: {', '.join(ingredients)}")
-
+uploaded_file = st.file_uploader("Upload an image of your ingredients", type=["jpg", "jpeg", "png"])
+if uploaded_file is not None:
+    ingredients = extract_ingredients(uploaded_file)
+    st.write("Ingredients found:")
+    st.write(", ".join(ingredients))
+    
     suggested_dishes = generate_dishes(ingredients)
-    st.write("Suggested dishes:")
 
-    for idx, dish in enumerate(suggested_dishes):
-        st.write(f"{idx + 1}. {dish}")
+    if len(suggested_dishes) > 0:
+        st.write("Suggested dishes based on the ingredients:")
+        for idx, dish in enumerate(suggested_dishes):
+            st.write(f"{idx + 1}. {dish['name']}")
 
-    selected_dish = st.radio("Select a dish to generate an image", suggested_dishes)
-
-    if selected_dish:
-        generated_image = generate_image(selected_dish)
-        st.image(generated_image, caption=selected_dish, use_column_width=True)
+        for idx, dish in enumerate(suggested_dishes[:3]):
+            if st.button(f"Generate Image for Dish {idx + 1}"):
+                dish_image = generate_image(dish['name'])
+                st.image(dish_image, caption=dish['name'], use_column_width=True)
+    else:
+        st.write("No dishes found for the given ingredients.")
