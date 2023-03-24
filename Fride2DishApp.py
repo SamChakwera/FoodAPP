@@ -78,17 +78,19 @@ if uploaded_file is not None:
     ingredients = extract_ingredients(uploaded_file)
     st.write("Ingredients found:")
     st.write(", ".join(ingredients))
+
+    st.image(uploaded_file, caption="Uploaded Image", use_column_width=True)
     
     suggested_dishes = generate_dishes(ingredients)
 
     if len(suggested_dishes) > 0:
         st.write("Suggested dishes based on the ingredients:")
         for idx, dish in enumerate(suggested_dishes):
-            st.write(f"{idx + 1}. {dish['name']}")
+            st.write(f"{idx + 1}. {dish.split(':')[0]}")
 
         for idx, dish in enumerate(suggested_dishes[:3]):
             if st.button(f"Generate Image for Dish {idx + 1}"):
-                dish_image = generate_image(dish['name'])
-                st.image(dish_image, caption=dish['name'], use_column_width=True)
+                dish_image = generate_image(dish.split(':')[0])
+                st.image(dish_image, caption=dish.split(':')[0], use_column_width=True)
     else:
         st.write("No dishes found for the given ingredients.")
