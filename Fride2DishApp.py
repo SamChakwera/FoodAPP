@@ -52,7 +52,7 @@ def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
     return dishes
 
 def generate_image(prompt):
-    model_id = "runwayml/stable-diffusion-v1-5"
+    model_id = "stabilityai/stable-diffusion-2-1"
     pipe = StableDiffusionPipeline.from_pretrained(model_id)
 
     # If you have a GPU available, uncomment the following line
