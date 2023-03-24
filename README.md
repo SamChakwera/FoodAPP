@@ -64,9 +64,9 @@ streamlit run app.py
 
 - Python
 - Streamlit
-- OpenAI GPT-3
+- OpenAI GPT-3 (API Key required) 
 - OpenAI CLIP
-- OpenAI DALL-E
+- Runwayml Stable Diffusion v1-5
 - PIL (Python Imaging Library)
 - Diffusers
 
@@ -74,6 +74,8 @@ streamlit run app.py
 
 This project is licensed under the [MIT License](LICENSE).
 
+Example:
+You can find a version of this working on my [huggingface space](https://huggingface.co/spaces/stchakman/Fridge2Dish). Feel free to clone it however you will need to run it with atleast the nvidia T4 GPU becaus the diffusion model requires too much resources it cant run on the base CPU. 
 
 ## Contact
 
