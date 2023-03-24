@@ -51,14 +51,13 @@ def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
     dishes = [choice.text.strip() for choice in response.choices]
     return dishes
 
+model_id = "stabilityai/stable-diffusion-2-1"
 def generate_image(prompt):
-    model_id = "stabilityai/stable-diffusion-2-1"
-    pipe = StableDiffusionPipeline.from_pretrained(model_id)
-
+    with st.spinner("Generating image..."):
+        pipe = StableDiffusionPipeline.from_pretrained(model_id)
     # If you have a GPU available, uncomment the following line
     # pipe = pipe.to("cuda")
-
-    image = pipe(prompt).images[0]
+        image = pipe(prompt).images[0]
     return image
 
 def get_image_download_link(image, filename, text):
@@ -70,35 +69,20 @@ def get_image_download_link(image, filename, text):
 
 st.title("Fridge to Dish App")
 
-uploaded_image = st.file_uploader("Upload an image of your fridge", type=["jpg", "jpeg", "png"])
+uploaded_image = st.file_uploader("Upload an image of your fridge", type=["jpg", "jpeg"])
 
 if uploaded_image is not None:
-    image = Image.open(uploaded_image)
-    st.image(image, caption="Uploaded Fridge Image, Please wait", use_column_width=True)
-
-    ingredients = extract_ingredients(image)
-    st.write("Detected Ingredients:")
-    st.write(ingredients)
+    ingredients = extract_ingredients(uploaded_image)
+    st.write(f"Identified ingredients: {', '.join(ingredients)}")
 
     suggested_dishes = generate_dishes(ingredients)
+    st.write("Suggested dishes:")
 
-    if suggested_dishes:
-        st.write("Suggested Dishes:")
-        for dish in suggested_dishes:
-            st.write(dish)
+    for idx, dish in enumerate(suggested_dishes):
+        st.write(f"{idx + 1}. {dish}")
 
-        if st.button("Generate Image for Dish 1"):
-            dish1_image = generate_image(suggested_dishes[0].split(":")[0])
-            st.image(dish1_image, caption=f"Generated Image for {suggested_dishes[0].split(':')[0]}", use_column_width=True)
+    selected_dish = st.radio("Select a dish to generate an image", suggested_dishes)
 
-        if st.button("Generate Image for Dish 2"):
-            dish2_image = generate_image(suggested_dishes[1].split(":")[0])
-            st.image(dish2_image, caption=f"Generated Image for {suggested_dishes[1].split(':')[0]}", use_column_width=True)
-
-        if st.button("Generate Image for Dish 3"):
-            dish3_image = generate_image(suggested_dishes[2].split(":")[0])
-            st.image(dish3_image, caption=f"Generated Image for {suggested_dishes[2].split(':')[0]}", use_column_width=True)
-    else:
-        st.write("No dishes found")
-else:
-    st.write("Please upload an image")
+    if selected_dish:
+        generated_image = generate_image(selected_dish)
+        st.image(generated_image, caption=selected_dish, use_column_width=True)
