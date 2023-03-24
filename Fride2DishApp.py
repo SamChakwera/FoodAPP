@@ -26,19 +26,23 @@ ingredient_names = list(term_variables)
 
 classifier = pipeline("image-classification", model="stchakman/Fridge_Items_Model")
 
-def extract_ingredients(image):
-    # Save the PIL Image as a temporary file
-    with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as temp_file:
-        image.save(temp_file, format="JPEG")
-        temp_file_path = temp_file.name
+def extract_ingredients(uploaded_image):
+    temp_file = tempfile.NamedTemporaryFile(delete=False)
+    temp_file.write(uploaded_image.getvalue())
+    temp_file.flush()
 
-    preds = classifier(temp_file_path)
-    predictions = [pred["label"] for pred in preds]
-    return [prediction for prediction in predictions if prediction in ingredient_names]
+    image = Image.open(temp_file.name)
+    preds = classifier(temp_file.name)
+    ingredients = [label for score, label in preds]
+
+    temp_file.close()
+    os.unlink(temp_file.name)
+    return ingredients
+
 
 def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
     ingredients_str = ', '.join(ingredients)
-    prompt = f"I have {ingredients_str} Please return the name of a dish I can make followed by intructions on how to prepare that dish "
+    prompt = f"I have {ingredients_str} Please return the name of a dish I can make followed by instructions on how to prepare that dish "
 
     response = openai.Completion.create(
         model="text-davinci-003",
@@ -51,7 +55,7 @@ def generate_dishes(ingredients, n=3, max_tokens=150, temperature=0.7):
     dishes = [choice.text.strip() for choice in response.choices]
     return dishes
 
-model_id = "stabilityai/stable-diffusion-2-1"
+model_id = "runwayml/stable-diffusion-v1-5"
 def generate_image(prompt):
     with st.spinner("Generating image..."):
         pipe = StableDiffusionPipeline.from_pretrained(model_id)
