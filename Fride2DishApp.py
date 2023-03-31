@@ -95,3 +95,4 @@ if uploaded_file is not None:
     else:
         st.write("No dishes found for the given ingredients.")
 
+st.write("Made by [Samuel Chakwera](https://https://www.linkedin.com/in/samuel-timothy-chakwera-41075868/)")
